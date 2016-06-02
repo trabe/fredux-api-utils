@@ -19,7 +19,7 @@ describe('api calls', () => {
       const request = "http://what/frus?key=value";
       fetchMock.mock(request, 200);
 
-      apiCalls[method]("http://what/frus", {body: {"name": "Peter"}, params: {"key": "value"}})();
+      apiCalls[method]("http://what/frus", {body: {"name": "Peter"}, params: {"key": "value"}});
 
       // OMFG!! a call object in fetch mock is an array with the call as the first element and some freaking options as the second.
       const lastCall = fetchMock.lastCall(request)[0];
