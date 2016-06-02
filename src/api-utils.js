@@ -4,14 +4,14 @@ function buildFetchRequest({ endpoint, options: { method, body } }) {
     options.body = JSON.stringify(body);
     options.headers["Content-Type"] = "application/json";
   }
-return new Request(endpoint, options);
+  return new Request(endpoint, options);
 }
 
 const addParams = (endpoint, params) => {
   return `${endpoint}${params ? "?" + Object.keys(params).map(key => `${key}=${params[key]}`).join("&") : ""}`;
 };
 
-const callFactory = (method) => (endpoint, { body, params } = {}) => () => {
+const makeRequest = (method) => (endpoint, { body, params } = {}) => {
   const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body } });
   return fetch(fetchReq)
     .then(response => response.json()
@@ -24,7 +24,7 @@ const callFactory = (method) => (endpoint, { body, params } = {}) => () => {
 };
 
 // Usage: post("/users", {body: {"name": "Peter"}, params: {"key": "value"}})
-export const get = callFactory("GET");
-export const post = callFactory("POST");
-export const put = callFactory("PUT");
-export const del = callFactory("DELETE");
+export const get = makeRequest("GET");
+export const post = makeRequest("POST");
+export const put = makeRequest("PUT");
+export const del = makeRequest("DELETE");
