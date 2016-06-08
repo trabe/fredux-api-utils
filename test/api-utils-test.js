@@ -14,21 +14,90 @@ describe('api calls', () => {
     del: "DELETE"
   }
 
-  it('creates a promise', () => {
-    Object.keys(availableMethods).forEach(method => {
-      const request = "http://what/frus?key=value";
-      fetchMock.mock(request, 200);
+  const url = "http://what/frus";
+  const callBody = { "name": "Peter" };
+  const callParams = { "key": "value" };
+  const apiCall = method => apiCalls[method](url, { body: callBody, params: callParams });
 
-      apiCalls[method]("http://what/frus", {body: {"name": "Peter"}, params: {"key": "value"}});
+  const requestUrl = `${url}?key=value`;
+  const withMockCall = (status, body, fn) => {
+    fetchMock.mock(requestUrl, { body, status });
+    fn();
+    fetchMock.restore();
+  }
 
-      // OMFG!! a call object in fetch mock is an array with the call as the first element and some freaking options as the second.
-      const lastCall = fetchMock.lastCall(request)[0];
+  const assertApiCalled = method => {
+    expect(fetchMock.called(requestUrl)).toEqual(true);
+    const lastCall = fetchMock.lastCall(requestUrl)[0];
+    expect(JSON.parse(lastCall.body)).toEqual({"name": "Peter"});
+    expect(lastCall.method).toEqual(availableMethods[method]);
+  }
 
-      expect(fetchMock.called(request)).toEqual(true);
-      expect(JSON.parse(lastCall.body)).toEqual({"name": "Peter"});
-      expect(lastCall.method).toEqual(availableMethods[method]);
+  const raise = e => setTimeout(() => { throw e }, 0);
 
-      fetchMock.restore();
+  Object.keys(availableMethods).forEach(method => {
+
+    describe(method, () => {
+
+      context("successful request", () => {
+        context("with body", () => {
+          it("returns a resolved promise", (done) => {
+            const responseBody = { key: "value" };
+
+            withMockCall(200, responseBody, () => {
+              apiCall(method).then((response) => {
+                expect(response).toEqual(responseBody);
+                done();
+              }).catch(e => raise(e));
+
+              assertApiCalled(method);
+            })
+          })
+        })
+
+        context("without body", () => {
+          it("returns a resolved promise", (done) => {
+            withMockCall(200, null, () => {
+              apiCall(method).then((response) => {
+                expect(response).toEqual("");
+                done();
+              }).catch(e => raise(e));
+
+              assertApiCalled(method);
+            })
+          })
+        })
+      })
+
+      context("error request", () => {
+        context("with body", () => {
+          it("returns a rejected promise", (done) => {
+            const errorBody = { error: "error" };
+
+            withMockCall(500, errorBody, () => {
+              apiCall(method).catch((error) => {
+                expect(error).toEqual(errorBody);
+                done();
+              })
+
+              assertApiCalled(method);
+            })
+          })
+        })
+
+        context("without body", () => {
+          it("returns a rejected promise", (done) => {
+            withMockCall(500, null, () => {
+              apiCall(method).catch((error) => {
+                expect(error).toEqual("");
+                done();
+              })
+
+              assertApiCalled(method);
+            })
+          })
+        })
+      })
     })
   })
 })
