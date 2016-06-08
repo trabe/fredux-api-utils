@@ -3,7 +3,7 @@ import fetchMock from "fetch-mock";
 
 import expect from "expect";
 import sinon from "sinon";
-import * as apiCalls from "../api-utils";
+import * as apiCalls from "../src/api-utils";
 
 describe('api calls', () => {
 
