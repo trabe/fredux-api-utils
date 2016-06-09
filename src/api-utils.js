@@ -11,17 +11,26 @@ const addParams = (endpoint, params) => {
   return `${endpoint}${params ? "?" + Object.keys(params).map(key => `${key}=${params[key]}`).join("&") : ""}`;
 };
 
+
+const responseBody = response => {
+  return response.text().then(text => {
+    try {
+      return JSON.parse(text)
+    } catch(Error) {
+      return text;
+    }
+  })
+}
+
 const makeRequest = (method) => (endpoint, { body, params } = {}) => {
   const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body } });
-  return fetch(fetchReq)
-    .then(response => response.json()
-      .then(json => {
-        if (!response.ok) {
-          return Promise.reject(json);
-        }
-        return json;
-      }));
-};
+
+  return new Promise((resolve, reject) => {
+    fetch(fetchReq).then(response => {
+      responseBody(response).then(response.ok? resolve : reject)
+    })
+  })
+}
 
 // Usage: post("/users", {body: {"name": "Peter"}, params: {"key": "value"}})
 export const get = makeRequest("GET");
