@@ -14,21 +14,22 @@ describe('api calls', () => {
     del: "DELETE"
   }
 
-  const url = "http://what/frus";
+  const baseUrl = "http://what/frus";
   const callBody = { "name": "Peter" };
   const callParams = { "key": "value" };
-  const apiCall = method => apiCalls[method](url, { body: callBody, params: callParams });
+  const apiCall = method => apiCalls[method](baseUrl, { body: callBody, params: callParams });
+  const apiCallWithNoParams = method => apiCalls[method](baseUrl, { body: callBody, params: {} });
 
-  const requestUrl = `${url}?key=value`;
-  const withMockCall = (status, body, fn) => {
-    fetchMock.mock(requestUrl, { body, status });
+  const requestUrl = `${baseUrl}?key=value`;
+  const withMockCall = (status, body, fn, url = requestUrl) => {
+    fetchMock.mock(url, { body, status });
     fn();
     fetchMock.restore();
   }
 
-  const assertApiCalled = method => {
-    expect(fetchMock.called(requestUrl)).toEqual(true);
-    const lastCall = fetchMock.lastCall(requestUrl)[0];
+  const assertApiCalled = (method, url = requestUrl) => {
+    expect(fetchMock.called(url)).toEqual(true);
+    const lastCall = fetchMock.lastCall(url)[0];
     expect(JSON.parse(lastCall.body)).toEqual({"name": "Peter"});
     expect(lastCall.method).toEqual(availableMethods[method]);
   }
@@ -67,6 +68,19 @@ describe('api calls', () => {
             })
           })
         })
+
+        context("without params", () => {
+          it("returns a resolved promise", (done) => {
+            withMockCall(200, null, () => {
+              apiCallWithNoParams(method).then((response) => {
+                expect(response).toEqual("");
+                done();
+              }).catch(e => raise(e));
+
+              assertApiCalled(method, baseUrl);
+            }, baseUrl)
+          })
+        })
       })
 
       context("error request", () => {
@@ -82,6 +96,21 @@ describe('api calls', () => {
 
               assertApiCalled(method);
             })
+          })
+        })
+
+        context("without params", () => {
+          it("returns a resolved promise", (done) => {
+            const errorBody = { error: "error" };
+
+            withMockCall(500, errorBody, () => {
+              apiCallWithNoParams(method).catch((error) => {
+                expect(error).toEqual(errorBody);
+                done();
+              })
+
+              assertApiCalled(method, baseUrl);
+            }, baseUrl)
           })
         })
 

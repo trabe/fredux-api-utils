@@ -8,7 +8,7 @@ function buildFetchRequest({ endpoint, options: { method, body } }) {
 }
 
 const addParams = (endpoint, params) => {
-  return `${endpoint}${params ? "?" + Object.keys(params).map(key => `${key}=${params[key]}`).join("&") : ""}`;
+  return `${endpoint}${ (Object.keys(params).length > 0) ? "?" + Object.keys(params).map(key => `${key}=${params[key]}`).join("&") : ""}`;
 };
 
 
