@@ -18,7 +18,8 @@ describe('api calls', () => {
   const callBody = { "name": "Peter" };
   const callParams = { "key": "value" };
   const apiCall = method => apiCalls[method](baseUrl, { body: callBody, params: callParams });
-  const apiCallWithNoParams = method => apiCalls[method](baseUrl, { body: callBody, params: {} });
+  const apiCallWithEmptyParams = method => apiCalls[method](baseUrl, { body: callBody, params: {} });
+  const apiCallWithNoParams = method => apiCalls[method](baseUrl, { body: callBody, params: null });
 
   const requestUrl = `${baseUrl}?key=value`;
   const withMockCall = (status, body, fn, url = requestUrl) => {
@@ -73,6 +74,19 @@ describe('api calls', () => {
           it("returns a resolved promise", (done) => {
             withMockCall(200, null, () => {
               apiCallWithNoParams(method).then((response) => {
+                expect(response).toEqual("");
+                done();
+              }).catch(e => raise(e));
+
+              assertApiCalled(method, baseUrl);
+            }, baseUrl)
+          })
+        })
+
+        context("with empty params", () => {
+          it("returns a resolved promise", (done) => {
+            withMockCall(200, null, () => {
+              apiCallWithEmptyParams(method).then((response) => {
                 expect(response).toEqual("");
                 done();
               }).catch(e => raise(e));
