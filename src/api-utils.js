@@ -15,25 +15,31 @@ const addParams = (endpoint, params) => {
 const responseBody = response => {
   return response.text().then(text => {
     try {
-      return JSON.parse(text)
+      return JSON.parse(text);
     } catch(Error) {
       return text;
     }
-  })
-}
+  });
+};
 
 const makeRequest = (method) => (endpoint, { body, params } = {}) => {
   const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body } });
 
-  return new Promise((resolve, reject) => {
-    fetch(fetchReq).then(response => {
-      responseBody(response).then(response.ok? resolve : reject)
-    })
-  })
-}
+  return fetch(fetchReq);
+};
+
+const parseResponse = fn => (...args) => fn(...args).then(
+  response => new Promise((resolve, reject) => responseBody(response).then(response.ok? resolve : reject))
+);
 
 // Usage: post("/users", {body: {"name": "Peter"}, params: {"key": "value"}})
-export const get = makeRequest("GET");
-export const post = makeRequest("POST");
-export const put = makeRequest("PUT");
-export const del = makeRequest("DELETE");
+
+export const getRaw = makeRequest("GET");
+export const postRaw = makeRequest("POST");
+export const putRaw = makeRequest("PUT");
+export const delRaw = makeRequest("DELETE");
+
+export const get = parseResponse(getRaw);
+export const post = parseResponse(postRaw);
+export const put = parseResponse(putRaw);
+export const del = parseResponse(delRaw);

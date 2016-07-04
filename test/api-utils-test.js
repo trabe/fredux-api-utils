@@ -12,12 +12,13 @@ describe('api calls', () => {
     post: "POST",
     put: "PUT",
     del: "DELETE"
-  }
+  };
 
   const baseUrl = "http://what/frus";
   const callBody = { "name": "Peter" };
   const callParams = { "key": "value" };
   const apiCall = method => apiCalls[method](baseUrl, { body: callBody, params: callParams });
+  const rawApiCall = method => apiCalls[`${method}Raw`](baseUrl, { body: callBody, params: callParams });
   const apiCallWithEmptyParams = method => apiCalls[method](baseUrl, { body: callBody, params: {} });
   const apiCallWithNoParams = method => apiCalls[method](baseUrl, { body: callBody, params: null });
 
@@ -26,20 +27,37 @@ describe('api calls', () => {
     fetchMock.mock(url, { body, status });
     fn();
     fetchMock.restore();
-  }
+  };
 
   const assertApiCalled = (method, url = requestUrl) => {
     expect(fetchMock.called(url)).toEqual(true);
     const lastCall = fetchMock.lastCall(url)[0];
     expect(JSON.parse(lastCall.body)).toEqual({"name": "Peter"});
     expect(lastCall.method).toEqual(availableMethods[method]);
-  }
+  };
 
   const raise = e => setTimeout(() => { throw e }, 0);
 
   Object.keys(availableMethods).forEach(method => {
 
     describe(method, () => {
+      context("raw call", () => {
+        it("returns a resolved promise", done => {
+          const responseBody = { key: "value" };
+
+          withMockCall(200, responseBody, () => {
+            rawApiCall(method).then((response) => {
+              expect(response.status).toEqual(200);
+              response.text().then(response => {
+                expect(JSON.parse(response)).toEqual(responseBody);
+                done();
+              });
+            }).catch(e => raise(e));
+            assertApiCalled(method);
+          });
+        });
+      });
+
 
       context("successful request", () => {
         context("with body", () => {
@@ -53,9 +71,9 @@ describe('api calls', () => {
               }).catch(e => raise(e));
 
               assertApiCalled(method);
-            })
-          })
-        })
+            });
+          });
+        });
 
         context("without body", () => {
           it("returns a resolved promise", (done) => {
@@ -66,9 +84,9 @@ describe('api calls', () => {
               }).catch(e => raise(e));
 
               assertApiCalled(method);
-            })
-          })
-        })
+            });
+          });
+        });
 
         context("without params", () => {
           it("returns a resolved promise", (done) => {
@@ -79,9 +97,9 @@ describe('api calls', () => {
               }).catch(e => raise(e));
 
               assertApiCalled(method, baseUrl);
-            }, baseUrl)
-          })
-        })
+            }, baseUrl);
+          });
+        });
 
         context("with empty params", () => {
           it("returns a resolved promise", (done) => {
@@ -92,10 +110,10 @@ describe('api calls', () => {
               }).catch(e => raise(e));
 
               assertApiCalled(method, baseUrl);
-            }, baseUrl)
-          })
-        })
-      })
+            }, baseUrl);
+          });
+        });
+      });
 
       context("error request", () => {
         context("with body", () => {
@@ -106,12 +124,12 @@ describe('api calls', () => {
               apiCall(method).catch((error) => {
                 expect(error).toEqual(errorBody);
                 done();
-              })
+              });
 
               assertApiCalled(method);
-            })
-          })
-        })
+            });
+          });
+        });
 
         context("without params", () => {
           it("returns a resolved promise", (done) => {
@@ -121,12 +139,12 @@ describe('api calls', () => {
               apiCallWithNoParams(method).catch((error) => {
                 expect(error).toEqual(errorBody);
                 done();
-              })
+              });
 
               assertApiCalled(method, baseUrl);
-            }, baseUrl)
-          })
-        })
+            }, baseUrl);
+          });
+        });
 
         context("without body", () => {
           it("returns a rejected promise", (done) => {
@@ -134,14 +152,14 @@ describe('api calls', () => {
               apiCall(method).catch((error) => {
                 expect(error).toEqual("");
                 done();
-              })
+              });
 
               assertApiCalled(method);
-            })
-          })
-        })
-      })
-    })
-  })
-})
+            });
+          });
+        });
+      });
+    });
+  });
+});
 
