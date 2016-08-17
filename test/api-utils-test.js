@@ -17,10 +17,12 @@ describe('api calls', () => {
   const baseUrl = "http://what/frus";
   const callBody = { "name": "Peter" };
   const callParams = { "key": "value" };
+  const callHeaders = { "Content-Type": "Custom", "X-Head": "xHead" };
   const apiCall = method => apiCalls[method](baseUrl, { body: callBody, params: callParams });
   const rawApiCall = method => apiCalls[`${method}Raw`](baseUrl, { body: callBody, params: callParams });
   const apiCallWithEmptyParams = method => apiCalls[method](baseUrl, { body: callBody, params: {} });
   const apiCallWithNoParams = method => apiCalls[method](baseUrl, { body: callBody, params: null });
+  const apiCallWithExtraHeaders = method => apiCalls[method](baseUrl, { body: callBody, params: null, headers: callHeaders });
 
   const requestUrl = `${baseUrl}?key=value`;
   const withMockCall = (status, body, fn, url = requestUrl) => {
@@ -35,6 +37,11 @@ describe('api calls', () => {
     expect(JSON.parse(lastCall.body)).toEqual({"name": "Peter"});
     expect(lastCall.method).toEqual(availableMethods[method]);
   };
+
+  const assertHeader = (name, value, url = requestUrl) => {
+    const lastCall = fetchMock.lastCall(url)[0];
+    expect(lastCall.headers.get(name)).toEqual(value);
+  }
 
   const raise = e => setTimeout(() => { throw e }, 0);
 
@@ -54,6 +61,7 @@ describe('api calls', () => {
               });
             }).catch(e => raise(e));
             assertApiCalled(method);
+            assertHeader("Content-Type", "application/json");
           });
         });
       });
@@ -71,6 +79,7 @@ describe('api calls', () => {
               }).catch(e => raise(e));
 
               assertApiCalled(method);
+              assertHeader("Content-Type", "application/json");
             });
           });
         });
@@ -84,6 +93,7 @@ describe('api calls', () => {
               }).catch(e => raise(e));
 
               assertApiCalled(method);
+              assertHeader("Content-Type", "application/json");
             });
           });
         });
@@ -97,6 +107,7 @@ describe('api calls', () => {
               }).catch(e => raise(e));
 
               assertApiCalled(method, baseUrl);
+              assertHeader("Content-Type", "application/json", baseUrl);
             }, baseUrl);
           });
         });
@@ -110,6 +121,7 @@ describe('api calls', () => {
               }).catch(e => raise(e));
 
               assertApiCalled(method, baseUrl);
+              assertHeader("Content-Type", "application/json", baseUrl);
             }, baseUrl);
           });
         });
@@ -127,6 +139,7 @@ describe('api calls', () => {
               });
 
               assertApiCalled(method);
+              assertHeader("Content-Type", "application/json");
             });
           });
         });
@@ -142,6 +155,7 @@ describe('api calls', () => {
               });
 
               assertApiCalled(method, baseUrl);
+              assertHeader("Content-Type", "application/json", baseUrl);
             }, baseUrl);
           });
         });
@@ -155,8 +169,24 @@ describe('api calls', () => {
               });
 
               assertApiCalled(method);
+              assertHeader("Content-Type", "application/json");
             });
           });
+        });
+      });
+
+      context("with custom headers", () => {
+        it("returns a resolved promise", (done) => {
+            withMockCall(200, null, () => {
+              apiCallWithExtraHeaders(method).then((response) => {
+                expect(response).toEqual("");
+                done();
+              }).catch(e => raise(e));
+
+              assertApiCalled(method, baseUrl);
+              assertHeader("Content-Type", "Custom", baseUrl);
+              assertHeader("X-Head", "xHead", baseUrl);
+            }, baseUrl);
         });
       });
     });

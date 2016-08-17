@@ -1,8 +1,10 @@
-function buildFetchRequest({ endpoint, options: { method, body } }) {
-  let options = { method, headers: {}, credentials: "same-origin" };
+function buildFetchRequest({ endpoint, options: { method, body, headers = {} } }) {
+  let options = { method, headers, credentials: "same-origin" };
   if (body) {
     options.body = JSON.stringify(body);
-    options.headers["Content-Type"] = "application/json";
+    if(!options.headers["Content-Type"]) {
+      options.headers["Content-Type"] = "application/json";
+    }
   }
   return new Request(endpoint, options);
 }
@@ -22,8 +24,8 @@ const responseBody = response => {
   });
 };
 
-const makeRequest = (method) => (endpoint, { body, params } = {}) => {
-  const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body } });
+const makeRequest = (method) => (endpoint, { body, params, headers } = {}) => {
+  const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body, headers } });
 
   return fetch(fetchReq);
 };
