@@ -1,5 +1,5 @@
-function buildFetchRequest({ endpoint, options: { method, body, headers = {} } }) {
-  let options = { method, headers, credentials: "same-origin" };
+function buildFetchRequest({ endpoint, options: { method, body, headers = {}, timeout = 0 } }) {
+  let options = { method, headers, credentials: "same-origin", timeout };
   if (body) {
     options.body = JSON.stringify(body);
     if(!options.headers["Content-Type"]) {
@@ -24,8 +24,8 @@ const responseBody = response => {
   });
 };
 
-const makeRequest = (method) => (endpoint, { body, params, headers } = {}) => {
-  const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body, headers } });
+const makeRequest = (method) => (endpoint, { body, params, headers, timeout } = {}) => {
+  const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body, headers, timeout } });
 
   return fetch(fetchReq);
 };
@@ -34,7 +34,7 @@ const parseResponse = fn => (...args) => fn(...args).then(
   response => new Promise((resolve, reject) => responseBody(response).then(response.ok? resolve : reject))
 );
 
-// Usage: post("/users", {body: {"name": "Peter"}, params: {"key": "value"}})
+// Usage: post("/users", {body: {"name": "Peter"}, params: {"key": "value"}, timeout: 2000})
 
 export const getRaw = makeRequest("GET");
 export const postRaw = makeRequest("POST");

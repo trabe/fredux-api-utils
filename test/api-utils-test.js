@@ -23,6 +23,7 @@ describe('api calls', () => {
   const apiCallWithEmptyParams = method => apiCalls[method](baseUrl, { body: callBody, params: {} });
   const apiCallWithNoParams = method => apiCalls[method](baseUrl, { body: callBody, params: null });
   const apiCallWithExtraHeaders = method => apiCalls[method](baseUrl, { body: callBody, params: null, headers: callHeaders });
+  const apiCallWithTimeoutOption = method => apiCalls[method](baseUrl, { body: callBody, params: {}, timeout: 2000});
 
   const requestUrl = `${baseUrl}?key=value`;
   const withMockCall = (status, body, fn, url = requestUrl) => {
@@ -41,6 +42,11 @@ describe('api calls', () => {
   const assertHeader = (name, value, url = requestUrl) => {
     const lastCall = fetchMock.lastCall(url)[0];
     expect(lastCall.headers.get(name)).toEqual(value);
+  }
+
+  const assertOption = (name, value, url = requestUrl) => {
+    const lastCall = fetchMock.lastCall(url)[0];
+    expect(lastCall[name]).toEqual(value);
   }
 
   const raise = e => setTimeout(() => { throw e }, 0);
@@ -177,16 +183,30 @@ describe('api calls', () => {
 
       context("with custom headers", () => {
         it("returns a resolved promise", (done) => {
-            withMockCall(200, null, () => {
-              apiCallWithExtraHeaders(method).then((response) => {
-                expect(response).toEqual("");
-                done();
-              }).catch(e => raise(e));
+          withMockCall(200, null, () => {
+            apiCallWithExtraHeaders(method).then((response) => {
+              expect(response).toEqual("");
+              done();
+            }).catch(e => raise(e));
 
-              assertApiCalled(method, baseUrl);
-              assertHeader("Content-Type", "Custom", baseUrl);
-              assertHeader("X-Head", "xHead", baseUrl);
-            }, baseUrl);
+            assertApiCalled(method, baseUrl);
+            assertHeader("Content-Type", "Custom", baseUrl);
+            assertHeader("X-Head", "xHead", baseUrl);
+          }, baseUrl);
+        });
+      });
+
+      context("with timeout option", () => {
+        it("returns a resolved promise", (done) => {
+          withMockCall(200, null, () => {
+            apiCallWithTimeoutOption(method).then((response) => {
+              expect(response).toEqual("");
+              done();
+            }).catch(e => raise(e));
+
+            assertApiCalled(method, baseUrl);
+            assertOption("timeout", 2000, baseUrl);
+          }, baseUrl);
         });
       });
     });

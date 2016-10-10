@@ -43,6 +43,16 @@ get("/users", { headers: {"my-custom-header": "custom" } })
   .catch(error => console.log(error));
 ```
 
+To set a timeout in ms.
+
+```
+import { get } from "fredux-api-utils";
+
+get("/users", timeout: 2000 })
+  .then(response => console.log(response))
+  .catch(error => console.log(error));
+```
+
 Of course, you can use all the options together:
 
 ```
@@ -51,7 +61,8 @@ import { post } from "fredux-api-utils";
 get("/users", {
     body: {"name": "Peter"},
     params: {"key": "value"},
-    headers: {"my-custom-header": "custom" } })
+    headers: {"my-custom-header": "custom" },
+    timeout: 2000 })
   .then(response => console.log(response))
   .catch(error => console.log(error));
 ```
