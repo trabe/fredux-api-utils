@@ -17,7 +17,7 @@ To send some URL params:
 ```
 import { get } from "fredux-api-utils";
 
-get("/users", params: {"key": "value"} })
+get("/users", { params: {"key": "value"} })
   .then(response => console.log(response))
   .catch(error => console.log(error));
 ```
