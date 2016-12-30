@@ -53,6 +53,16 @@ get("/users", { timeout: 2000 })
   .catch(error => console.log(error));
 ```
 
+To change default request mode:
+
+```javascript
+import { get } from "fredux-api-utils";
+
+get("/users", { mode: "no-cors" })
+  .then(response => console.log(response))
+  .catch(error => console.log(error));
+```
+
 Of course, you can use all the options together:
 
 ```javascript

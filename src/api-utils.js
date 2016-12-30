@@ -1,11 +1,15 @@
-function buildFetchRequest({ endpoint, options: { method, body, headers = {}, timeout = 0 } }) {
+function buildFetchRequest({ endpoint, options: { method, body, headers = {}, timeout = 0, mode } }) {
   let options = { method, headers, credentials: "same-origin", timeout };
   if (body) {
     options.body = JSON.stringify(body);
-    if(!options.headers["Content-Type"]) {
+    if (!options.headers["Content-Type"]) {
       options.headers["Content-Type"] = "application/json";
     }
   }
+  if (mode) {
+    options.mode = mode;
+  }
+
   return new Request(endpoint, options);
 }
 
@@ -24,8 +28,8 @@ const responseBody = response => {
   });
 };
 
-const makeRequest = (method) => (endpoint, { body, params, headers, timeout } = {}) => {
-  const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body, headers, timeout } });
+const makeRequest = (method) => (endpoint, { body, params, headers, timeout, mode } = {}) => {
+  const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body, headers, timeout, mode } });
 
   return fetch(fetchReq);
 };
@@ -34,7 +38,7 @@ const parseResponse = fn => (...args) => fn(...args).then(
   response => new Promise((resolve, reject) => responseBody(response).then(response.ok? resolve : reject))
 );
 
-// Usage: post("/users", {body: {"name": "Peter"}, params: {"key": "value"}, timeout: 2000})
+// Usage: post("/users", {body: {"name": "Peter"}, params: {"key": "value"}, timeout: 2000, mode: "cors"})
 
 export const getRaw = makeRequest("GET");
 export const postRaw = makeRequest("POST");
