@@ -79,7 +79,18 @@ get("/users", {
 
 ## Available API methods
 
- * get
- * post
- * put
- * del
+ * `get(endpoint, options)`
+ * `post(endpoint, options)`
+ * `put(endpoint, options)`
+ * `del(endpoint, options)`
+
+Where `endpoint` is a string with the resource you wish to fetch and `options` is an
+object containing custom settings you want to apply to the request. The possible options are:
+
+* `body`: any JSON body.
+* `params`: an object containing query params.
+* `headers`: any headers you want to add to your request.
+* `timeout`: any timeout in milliseconds. The default is `0`.
+* `mode`: the mode you want to use for the request, e.g., `cors`, `no-cors`, `same-origin`, or `navigate`. The default is `cors`.
+
+The value returned for all methods is a `Promise`.
