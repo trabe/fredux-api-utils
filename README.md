@@ -94,3 +94,10 @@ object containing custom settings you want to apply to the request. The possible
 * `mode`: the mode you want to use for the request, e.g., `cors`, `no-cors`, `same-origin`, or `navigate`. The default is `cors`.
 
 The value returned for all methods is a `Promise`.
+
+
+## CHANGELOG
+
+### v1.0.1
+
+* Added support for mode option in requests
