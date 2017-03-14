@@ -91,6 +91,7 @@ object containing custom settings you want to apply to the request. The possible
 * `params`: an object containing query params.
 * `headers`: any headers you want to add to your request.
 * `timeout`: any timeout in milliseconds. The default is `0`.
+* `credentials`: sets the policy for sending cookies. One of `omit`, `same-origin`, or `include`. Using `same-origin` as default.
 * `mode`: the mode you want to use for the request, e.g., `cors`, `no-cors`, `same-origin`, or `navigate`. The default is `cors`.
 
 The value returned for all methods is a `Promise`.
