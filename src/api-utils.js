@@ -1,5 +1,5 @@
-function buildFetchRequest({ endpoint, options: { method, body, headers = {}, timeout = 0, mode } }) {
-  let options = { method, headers, credentials: "same-origin", timeout };
+function buildFetchRequest({ endpoint, options: { method, body, headers = {}, timeout = 0, mode, credentials = "same-origin" } }) {
+  let options = { method, headers, credentials, timeout };
   if (body) {
     options.body = JSON.stringify(body);
     if (!options.headers["Content-Type"]) {
@@ -13,9 +13,9 @@ function buildFetchRequest({ endpoint, options: { method, body, headers = {}, ti
   return new Request(endpoint, options);
 }
 
-const addParams = (endpoint, params) => {
-  return `${endpoint}${ (params && Object.keys(params).length > 0) ? "?" + Object.keys(params).map(key => `${key}=${params[key]}`).join("&") : ""}`;
-};
+const addParams = (endpoint, params) => (
+  `${endpoint}${(params && Object.keys(params).length > 0) ? "?" + Object.keys(params).map(key => `${key}=${params[key]}`).join("&") : ""}`
+);
 
 
 const responseBody = response => {
@@ -28,8 +28,8 @@ const responseBody = response => {
   });
 };
 
-const makeRequest = (method) => (endpoint, { body, params, headers, timeout, mode } = {}) => {
-  const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body, headers, timeout, mode } });
+const makeRequest = method => (endpoint, { body, params, headers, timeout, mode, credentials } = {}) => {
+  const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body, headers, timeout, mode, credentials } });
 
   return fetch(fetchReq);
 };
