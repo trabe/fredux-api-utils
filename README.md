@@ -99,6 +99,14 @@ The value returned for all methods is a `Promise`.
 
 ## CHANGELOG
 
-### v1.0.1
+### v1.2.0
+
+* Added support for credentials option in requests
+
+### v1.1.0
 
 * Added support for mode option in requests
+
+### v1.0.0
+
+* Initial release
