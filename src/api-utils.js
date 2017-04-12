@@ -1,7 +1,20 @@
 function buildFetchRequest(
-  { endpoint, options: { method, body, headers = {}, timeout = 0, mode, credentials = "same-origin" } },
+  {
+    endpoint,
+    options: {
+      method = "GET",
+      body,
+      headers = {},
+      cache = "default",
+      timeout = 0,
+      mode = "same-origin",
+      credentials = "same-origin",
+    },
+  },
 ) {
-  const options = { method, headers, credentials, timeout };
+
+  const options = { method, headers, cache, timeout, mode, credentials };
+
   if (body) {
     options.body = JSON.stringify(body);
     if (!options.headers["Content-Type"]) {
