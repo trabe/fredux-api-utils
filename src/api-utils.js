@@ -1,3 +1,19 @@
+const array = a => a instanceof Array ? a : [a];
+
+const urlParameter = (key, value) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+
+const toUrlParams = obj =>
+  Object.keys(obj)
+    .reduce(
+      (parts, key) => {
+        const values = array(obj[key]);
+        values.forEach(value => parts.push(urlParameter(key, value)));
+        return parts;
+      },
+      [],
+    )
+    .join("&");
+
 function buildFetchRequest(
   {
     endpoint,
@@ -6,6 +22,7 @@ function buildFetchRequest(
       cache = "default",
       credentials = "same-origin",
       headers = {},
+      formData,
       method = "GET",
       mode = "same-origin",
       redirect = "follow",
@@ -25,27 +42,41 @@ function buildFetchRequest(
     timeout,
   };
 
+  if (body && formData) {
+    throw new Error("Cannot set multiple body types. Use either body or formData params");
+  }
+
   if (body) {
     options.body = JSON.stringify(body);
-    if (!options.headers["Content-Type"]) {
+    if (!headers["Content-Type"]) {
       options.headers["Content-Type"] = "application/json";
     }
   }
-  if (mode) {
-    options.mode = mode;
+
+  if (formData) {
+    options.body = toUrlParams(formData);
+    if (!headers["Content-Type"]) {
+      options.headers["Content-Type"] = "application/x-www-form-urlencoded";
+    }
   }
 
   return new Request(endpoint, options);
 }
 
-const addParams = (endpoint, params) => {
-  if (!params || Object.keys(params).length === 0) {
-    return endpoint;
-  }
+const addQuery = (endpoint, params) =>
+  !params || Object.keys(params).length === 0 ? endpoint : `${endpoint}?${toUrlParams(params)}`;
 
-  const query = Object.keys(params).map(key => `${key}=${params[key]}`).join("&");
-  return `${endpoint}?${query}`;
-};
+const makeRequest = method =>
+  (endpoint, options = {}) => {
+    const { params, ...rest } = options;
+
+    const fetchReq = buildFetchRequest({
+      endpoint: addQuery(endpoint, params),
+      options: { method, ...rest },
+    });
+
+    return fetch(fetchReq);
+  };
 
 const responseBody = response => response.text().then(text => {
     try {
@@ -55,23 +86,11 @@ const responseBody = response => response.text().then(text => {
     }
   });
 
-const makeRequest = method =>
-  (endpoint, { body, params, headers, timeout, mode, credentials } = {}) => {
-    const fetchReq = buildFetchRequest({
-      endpoint: addParams(endpoint, params),
-      options: { method, body, headers, timeout, mode, credentials },
-    });
-
-    return fetch(fetchReq);
-  };
-
 const parseResponse = fn =>
   (...args) =>
     fn(...args).then(
       response => new Promise((resolve, reject) => responseBody(response).then(response.ok ? resolve : reject)),
     );
-
-// Usage: post("/users", {body: {"name": "Peter"}, params: {"key": "value"}, timeout: 2000, mode: "cors"})
 
 export const getRaw = makeRequest("GET");
 export const postRaw = makeRequest("POST");

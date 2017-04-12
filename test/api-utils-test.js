@@ -2,257 +2,180 @@
 import "isomorphic-fetch";
 import fetchMock from "fetch-mock";
 import expect from "expect";
-import * as apiCalls from "../src/api-utils";
+import {get, post, put, del, getRaw, postRaw, putRaw, delRaw } from "../src/api-utils";
 
-describe("api calls", () => {
-  const availableMethods = {
-    get: "GET",
-    post: "POST",
-    put: "PUT",
-    del: "DELETE",
-  };
+const defaultUrl = "http://what/frus";
 
-  const baseUrl = "http://what/frus";
-  const callBody = { name: "Peter" };
-  const callParams = { key: "value" };
-  const callHeaders = { "Content-Type": "Custom", "X-Head": "xHead" };
+const withMockCall = ({ url = defaultUrl, body = "", status = 200 }, fn) => {
+  fetchMock.mock(url, { body, status });
+  fn(url);
+  fetchMock.restore();
+};
 
-  /* eslint-disable import/namespace */
-  const apiCall = method => apiCalls[method](baseUrl, { body: callBody, params: callParams });
-  const rawApiCall = method => apiCalls[`${method}Raw`](baseUrl, { body: callBody, params: callParams });
-  const apiCallWithEmptyParams = method => apiCalls[method](baseUrl, { body: callBody, params: {} });
-  const apiCallWithNoParams = method => apiCalls[method](baseUrl, { body: callBody, params: null });
-  const apiCallWithExtraHeaders = method =>
-    apiCalls[method](baseUrl, { body: callBody, params: null, headers: callHeaders });
-  const apiCallWithTimeoutOption = method => apiCalls[method](baseUrl, { body: callBody, params: {}, timeout: 2000 });
-  /* eslint-disable */
+const lastCall = (url = defaultUrl)  => fetchMock.lastCall(url)[0]
 
-  const requestUrl = `${baseUrl}?key=value`;
-  const withMockCall = (status, body, fn, url = requestUrl) => {
-    fetchMock.mock(url, { body, status });
-    fn();
-    fetchMock.restore();
-  };
+describe("api methods", () => {
+  it("get does a GETº", () => {
+    withMockCall({}, url => {
+      get(url);
+      expect(lastCall().method).toEqual("GET");
+    });
+  });
 
-  const assertApiCalled = (method, url = requestUrl) => {
-    expect(fetchMock.called(url)).toEqual(true);
-    const lastCall = fetchMock.lastCall(url)[0];
-    expect(JSON.parse(lastCall.body)).toEqual({ name: "Peter" });
-    expect(lastCall.method).toEqual(availableMethods[method]);
-  };
+  it("post does a POST", () => {
+    withMockCall({}, url => {
+      post(url);
+      expect(lastCall().method).toEqual("POST");
+    });
+  });
 
-  const assertHeader = (name, value, url = requestUrl) => {
-    const lastCall = fetchMock.lastCall(url)[0];
-    expect(lastCall.headers.get(name)).toEqual(value);
-  };
+  it("put does a PUT", () => {
+    withMockCall({}, url => {
+      put(url);
+      expect(lastCall().method).toEqual("PUT");
+    });
+  });
 
-  const assertOption = (name, value, url = requestUrl) => {
-    const lastCall = fetchMock.lastCall(url)[0];
-    expect(lastCall[name]).toEqual(value);
-  };
+  it("del does a DELETE", () => {
+    withMockCall({}, url => {
+      del(url);
+      expect(lastCall().method).toEqual("DELETE");
+    });
+  });
 
-  const raise = e =>
-    setTimeout(
-      () => {
-        throw e;
-      },
-      0,
-    );
+  it("getRaw does a GETº", () => {
+    withMockCall({}, url => {
+      getRaw(url);
+      expect(lastCall().method).toEqual("GET");
+    });
+  });
 
-  Object.keys(availableMethods).forEach(method => {
-    describe(method, () => {
-      context("raw call", () => {
-        it("returns a resolved promise", done => {
-          const responseBody = { key: "value" };
+  it("postRaw does a POST", () => {
+    withMockCall({}, url => {
+      postRaw(url);
+      expect(lastCall().method).toEqual("POST");
+    });
+  });
 
-          withMockCall(200, responseBody, () => {
-            rawApiCall(method)
-              .then(response => {
-                expect(response.status).toEqual(200);
-                response.text().then(response => {
-                  expect(JSON.parse(response)).toEqual(responseBody);
-                  done();
-                });
-              })
-              .catch(e => raise(e));
-            assertApiCalled(method);
-            assertHeader("Content-Type", "application/json");
-          });
-        });
+  it("putRae does a PUT", () => {
+    withMockCall({}, url => {
+      putRaw(url);
+      expect(lastCall().method).toEqual("PUT");
+    });
+  });
+
+  it("delRaw does a DELETE", () => {
+    withMockCall({}, url => {
+      delRaw(url);
+      expect(lastCall().method).toEqual("DELETE");
+    });
+  });
+});
+
+describe("options forwarding", () => {
+  it("forwards fetch options", () => {
+    withMockCall({}, url => {
+      get(url, { cache: "ca", credentials: "cr", mode: "m", redirect: "rd", referrer: "re", timeout: 100 });
+
+      // Fetch mock only allows testinf this values :(
+      expect(lastCall().redirect).toEqual("rd");
+      expect(lastCall().timeout).toEqual(100);
+    });
+  });
+
+  it("has default fetch options", () => {
+    withMockCall({}, url => {
+      get(url);
+
+      // Fetch mock only allows testinf this values :(
+      expect(lastCall().redirect).toEqual("follow");
+      expect(lastCall().timeout).toEqual(0);
+    });
+  });
+});
+
+describe("url params handling", () => {
+  it("does not append a query string if no params", () => {
+    withMockCall({}, url => {
+      get(url);
+      expect(lastCall().url).toEqual(url);
+    });
+  });
+
+  it("appends a query string if params present", () => {
+    withMockCall({ url: `${defaultUrl}?test=1&testM=a&testM=b`}, url => {
+      get(defaultUrl, { params: { test: 1, testM: ["a", "b"] } });
+      expect(lastCall(url).url).toEqual(url);
+    });
+  });
+});
+
+describe("body handling", () => {
+  it("fails with multiple body types", () => {
+    expect(() => get(defaultUrl, { body: "t", formData: "f" })).toThrow(/either body or formData/);
+  });
+
+  describe("json body", () => {
+    it("handles the body", () => {
+      withMockCall({}, url => {
+        post(url, { body: { test: 1 } });
+        expect(JSON.parse(lastCall().body)).toEqual({ test : 1 });
+        expect(lastCall().headers.get("Content-Type")).toEqual("application/json");
       });
+    });
 
-      context("successful request", () => {
-        context("with body", () => {
-          it("returns a resolved promise", done => {
-            const responseBody = { key: "value" };
-
-            withMockCall(200, responseBody, () => {
-              apiCall(method)
-                .then(response => {
-                  expect(response).toEqual(responseBody);
-                  done();
-                })
-                .catch(e => raise(e));
-
-              assertApiCalled(method);
-              assertHeader("Content-Type", "application/json");
-            });
-          });
-        });
-
-        context("without body", () => {
-          it("returns a resolved promise", done => {
-            withMockCall(200, null, () => {
-              apiCall(method)
-                .then(response => {
-                  expect(response).toEqual("");
-                  done();
-                })
-                .catch(e => raise(e));
-
-              assertApiCalled(method);
-              assertHeader("Content-Type", "application/json");
-            });
-          });
-        });
-
-        context("without params", () => {
-          it("returns a resolved promise", done => {
-            withMockCall(
-              200,
-              null,
-              () => {
-                apiCallWithNoParams(method)
-                  .then(response => {
-                    expect(response).toEqual("");
-                    done();
-                  })
-                  .catch(e => raise(e));
-
-                assertApiCalled(method, baseUrl);
-                assertHeader("Content-Type", "application/json", baseUrl);
-              },
-              baseUrl,
-            );
-          });
-        });
-
-        context("with empty params", () => {
-          it("returns a resolved promise", done => {
-            withMockCall(
-              200,
-              null,
-              () => {
-                apiCallWithEmptyParams(method)
-                  .then(response => {
-                    expect(response).toEqual("");
-                    done();
-                  })
-                  .catch(e => raise(e));
-
-                assertApiCalled(method, baseUrl);
-                assertHeader("Content-Type", "application/json", baseUrl);
-              },
-              baseUrl,
-            );
-          });
-        });
+    it("respects forced content types", () => {
+      withMockCall({}, url => {
+        post(url, { body: { test: 1 }, headers: { "Content-Type": "custom" } });
+        expect(JSON.parse(lastCall().body)).toEqual({ test : 1 });
+        expect(lastCall().headers.get("Content-Type")).toEqual("custom");
       });
+    });
+  });
 
-      context("error request", () => {
-        context("with body", () => {
-          it("returns a rejected promise", done => {
-            const errorBody = { error: "error" };
-
-            withMockCall(500, errorBody, () => {
-              apiCall(method).catch(error => {
-                expect(error).toEqual(errorBody);
-                done();
-              });
-
-              assertApiCalled(method);
-              assertHeader("Content-Type", "application/json");
-            });
-          });
-        });
-
-        context("without params", () => {
-          it("returns a resolved promise", done => {
-            const errorBody = { error: "error" };
-
-            withMockCall(
-              500,
-              errorBody,
-              () => {
-                apiCallWithNoParams(method).catch(error => {
-                  expect(error).toEqual(errorBody);
-                  done();
-                });
-
-                assertApiCalled(method, baseUrl);
-                assertHeader("Content-Type", "application/json", baseUrl);
-              },
-              baseUrl,
-            );
-          });
-        });
-
-        context("without body", () => {
-          it("returns a rejected promise", done => {
-            withMockCall(500, null, () => {
-              apiCall(method).catch(error => {
-                expect(error).toEqual("");
-                done();
-              });
-
-              assertApiCalled(method);
-              assertHeader("Content-Type", "application/json");
-            });
-          });
-        });
+  describe("from data body", () => {
+    it("handles the body", () => {
+      withMockCall({}, url => {
+        post(url, { formData: { test: 1, testM: ["a", "b"] } });
+        expect(lastCall().body).toEqual("test=1&testM=a&testM=b");
+        expect(lastCall().headers.get("Content-Type")).toEqual("application/x-www-form-urlencoded");
       });
+    });
 
-      context("with custom headers", () => {
-        it("returns a resolved promise", done => {
-          withMockCall(
-            200,
-            null,
-            () => {
-              apiCallWithExtraHeaders(method)
-                .then(response => {
-                  expect(response).toEqual("");
-                  done();
-                })
-                .catch(e => raise(e));
+    it("respects forced content-types", () => {
+      withMockCall({}, url => {
+        post(url, { formData: { test: 1 }, headers: { "Content-Type": "custom" } });
 
-              assertApiCalled(method, baseUrl);
-              assertHeader("Content-Type", "Custom", baseUrl);
-              assertHeader("X-Head", "xHead", baseUrl);
-            },
-            baseUrl,
-          );
-        });
+        expect(lastCall().body).toEqual("test=1");
+        expect(lastCall().headers.get("Content-Type")).toEqual("custom");
       });
+    });
+  });
 
-      context("with timeout option", () => {
-        it("returns a resolved promise", done => {
-          withMockCall(
-            200,
-            null,
-            () => {
-              apiCallWithTimeoutOption(method)
-                .then(response => {
-                  expect(response).toEqual("");
-                  done();
-                })
-                .catch(e => raise(e));
 
-              assertApiCalled(method, baseUrl);
-              assertOption("timeout", 2000, baseUrl);
-            },
-            baseUrl,
-          );
-        });
+  describe("response handling", () => {
+    describe("raw request", () => {
+      it("returns a promise", done => {
+        withMockCall({}, url => {
+          getRaw(url).then(res => {
+            expect(res.status).toEqual(200);
+            res.text().then(text => {
+              console.log(text);
+              done();
+            });
+          })
+        })
+      });
+    });
+
+    describe("parsed request", () => {
+      it("returns a json", done => {
+        withMockCall({ body: { test: 1 }}, url => {
+          get(url).then(json => {
+            expect(json).toEqual({ test: 1 });
+            done();
+          })
+        })
       });
     });
   });
