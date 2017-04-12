@@ -2,18 +2,28 @@ function buildFetchRequest(
   {
     endpoint,
     options: {
-      method = "GET",
       body,
-      headers = {},
       cache = "default",
-      timeout = 0,
-      mode = "same-origin",
       credentials = "same-origin",
+      headers = {},
+      method = "GET",
+      mode = "same-origin",
+      redirect = "follow",
+      referrer = "client",
+      timeout = 0,
     },
   },
 ) {
-
-  const options = { method, headers, cache, timeout, mode, credentials };
+  const options = {
+    cache,
+    credentials,
+    headers,
+    method,
+    mode,
+    redirect,
+    referrer,
+    timeout,
+  };
 
   if (body) {
     options.body = JSON.stringify(body);
