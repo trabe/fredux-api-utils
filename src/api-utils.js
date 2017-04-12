@@ -1,5 +1,7 @@
-function buildFetchRequest({ endpoint, options: { method, body, headers = {}, timeout = 0, mode, credentials = "same-origin" } }) {
-  let options = { method, headers, credentials, timeout };
+function buildFetchRequest(
+  { endpoint, options: { method, body, headers = {}, timeout = 0, mode, credentials = "same-origin" } },
+) {
+  const options = { method, headers, credentials, timeout };
   if (body) {
     options.body = JSON.stringify(body);
     if (!options.headers["Content-Type"]) {
@@ -13,30 +15,38 @@ function buildFetchRequest({ endpoint, options: { method, body, headers = {}, ti
   return new Request(endpoint, options);
 }
 
-const addParams = (endpoint, params) => (
-  `${endpoint}${(params && Object.keys(params).length > 0) ? "?" + Object.keys(params).map(key => `${key}=${params[key]}`).join("&") : ""}`
-);
+const addParams = (endpoint, params) => {
+  if (!params || Object.keys(params).length === 0) {
+    return endpoint;
+  }
 
+  const query = Object.keys(params).map(key => `${key}=${params[key]}`).join("&");
+  return `${endpoint}?${query}`;
+};
 
-const responseBody = response => {
-  return response.text().then(text => {
+const responseBody = response => response.text().then(text => {
     try {
       return JSON.parse(text);
-    } catch(Error) {
+    } catch (e) {
       return text;
     }
   });
-};
 
-const makeRequest = method => (endpoint, { body, params, headers, timeout, mode, credentials } = {}) => {
-  const fetchReq = buildFetchRequest({ endpoint: addParams(endpoint, params), options: { method, body, headers, timeout, mode, credentials } });
+const makeRequest = method =>
+  (endpoint, { body, params, headers, timeout, mode, credentials } = {}) => {
+    const fetchReq = buildFetchRequest({
+      endpoint: addParams(endpoint, params),
+      options: { method, body, headers, timeout, mode, credentials },
+    });
 
-  return fetch(fetchReq);
-};
+    return fetch(fetchReq);
+  };
 
-const parseResponse = fn => (...args) => fn(...args).then(
-  response => new Promise((resolve, reject) => responseBody(response).then(response.ok? resolve : reject))
-);
+const parseResponse = fn =>
+  (...args) =>
+    fn(...args).then(
+      response => new Promise((resolve, reject) => responseBody(response).then(response.ok ? resolve : reject)),
+    );
 
 // Usage: post("/users", {body: {"name": "Peter"}, params: {"key": "value"}, timeout: 2000, mode: "cors"})
 
