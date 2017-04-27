@@ -78,26 +78,7 @@ const makeRequest = method =>
     return fetch(fetchReq);
   };
 
-const responseBody = response => response.text().then(text => {
-    try {
-      return JSON.parse(text);
-    } catch (e) {
-      return text;
-    }
-  });
-
-const parseResponse = fn =>
-  (...args) =>
-    fn(...args).then(
-      response => new Promise((resolve, reject) => responseBody(response).then(response.ok ? resolve : reject)),
-    );
-
-export const getRaw = makeRequest("GET");
-export const postRaw = makeRequest("POST");
-export const putRaw = makeRequest("PUT");
-export const delRaw = makeRequest("DELETE");
-
-export const get = parseResponse(getRaw);
-export const post = parseResponse(postRaw);
-export const put = parseResponse(putRaw);
-export const del = parseResponse(delRaw);
+export const get = makeRequest("GET");
+export const post = makeRequest("POST");
+export const put = makeRequest("PUT");
+export const del = makeRequest("DELETE");

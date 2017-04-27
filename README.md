@@ -90,24 +90,13 @@ object containing custom settings you want to apply to the request. The possible
 
 This options, for the most part adhere to the fetch Request API.
 
-The value returned for all methods is a `Promise` that resolves to a json object.
-
-## Available Raw API methods
-
- * `getRaw(endpoint, options)`
- * `postRaw(endpoint, options)`
- * `putRaw(endpoint, options)`
- * `delRaw(endpoint, options)`
-
-This method acts like their non raw counterparts. The raw methods return the response object (as defined
-in the fetch API).
-
-```javascript
-getRaw("/endpoint")
-  .then(res => res.status);
-```
 
 ## CHANGELOG
+
+### v2.0.0
+
+* Removed the magic response parsing, thus removing the raw methods. Every method is raw now. Now all methods
+  return a standard response
 
 ### v1.3.0
 
