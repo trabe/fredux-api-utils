@@ -2,7 +2,7 @@
 import "isomorphic-fetch";
 import fetchMock from "fetch-mock";
 import expect from "expect";
-import {get, post, put, del, getRaw, postRaw, putRaw, delRaw } from "../src/api-utils";
+import { get, post, put, del } from "../src/api-utils";
 
 const defaultUrl = "http://what/frus";
 
@@ -12,7 +12,7 @@ const withMockCall = ({ url = defaultUrl, body = "", status = 200 }, fn) => {
   fetchMock.restore();
 };
 
-const lastCall = (url = defaultUrl)  => fetchMock.lastCall(url)[0]
+const lastCall = (url = defaultUrl) => fetchMock.lastCall(url)[0];
 
 describe("api methods", () => {
   it("get does a GETº", () => {
@@ -39,34 +39,6 @@ describe("api methods", () => {
   it("del does a DELETE", () => {
     withMockCall({}, url => {
       del(url);
-      expect(lastCall().method).toEqual("DELETE");
-    });
-  });
-
-  it("getRaw does a GETº", () => {
-    withMockCall({}, url => {
-      getRaw(url);
-      expect(lastCall().method).toEqual("GET");
-    });
-  });
-
-  it("postRaw does a POST", () => {
-    withMockCall({}, url => {
-      postRaw(url);
-      expect(lastCall().method).toEqual("POST");
-    });
-  });
-
-  it("putRae does a PUT", () => {
-    withMockCall({}, url => {
-      putRaw(url);
-      expect(lastCall().method).toEqual("PUT");
-    });
-  });
-
-  it("delRaw does a DELETE", () => {
-    withMockCall({}, url => {
-      delRaw(url);
       expect(lastCall().method).toEqual("DELETE");
     });
   });
@@ -103,7 +75,7 @@ describe("url params handling", () => {
   });
 
   it("appends a query string if params present", () => {
-    withMockCall({ url: `${defaultUrl}?test=1&testM=a&testM=b`}, url => {
+    withMockCall({ url: `${defaultUrl}?test=1&testM=a&testM=b` }, url => {
       get(defaultUrl, { params: { test: 1, testM: ["a", "b"] } });
       expect(lastCall(url).url).toEqual(url);
     });
@@ -119,7 +91,7 @@ describe("body handling", () => {
     it("handles the body", () => {
       withMockCall({}, url => {
         post(url, { body: { test: 1 } });
-        expect(JSON.parse(lastCall().body)).toEqual({ test : 1 });
+        expect(JSON.parse(lastCall().body)).toEqual({ test: 1 });
         expect(lastCall().headers.get("Content-Type")).toEqual("application/json");
       });
     });
@@ -127,7 +99,7 @@ describe("body handling", () => {
     it("respects forced content types", () => {
       withMockCall({}, url => {
         post(url, { body: { test: 1 }, headers: { "Content-Type": "custom" } });
-        expect(JSON.parse(lastCall().body)).toEqual({ test : 1 });
+        expect(JSON.parse(lastCall().body)).toEqual({ test: 1 });
         expect(lastCall().headers.get("Content-Type")).toEqual("custom");
       });
     });
@@ -152,30 +124,13 @@ describe("body handling", () => {
     });
   });
 
-
   describe("response handling", () => {
-    describe("raw request", () => {
-      it("returns a promise", done => {
-        withMockCall({}, url => {
-          getRaw(url).then(res => {
-            expect(res.status).toEqual(200);
-            res.text().then(text => {
-              console.log(text);
-              done();
-            });
-          })
-        })
-      });
-    });
-
-    describe("parsed request", () => {
-      it("returns a json", done => {
-        withMockCall({ body: { test: 1 }}, url => {
-          get(url).then(json => {
-            expect(json).toEqual({ test: 1 });
-            done();
-          })
-        })
+    it("returns a promise", done => {
+      withMockCall({}, url => {
+        get(url).then(res => {
+          expect(res.status).toEqual(200);
+          res.text().then(() => done());
+        });
       });
     });
   });
