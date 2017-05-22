@@ -14,6 +14,8 @@ const toUrlParams = obj =>
     )
     .join("&");
 
+const caseInsensitiveHasKey = (obj, key) => Object.keys(obj).some(k => k.toLowerCase() === key.toLowerCase());
+
 function buildFetchRequest(
   {
     endpoint,
@@ -48,14 +50,14 @@ function buildFetchRequest(
 
   if (body) {
     options.body = JSON.stringify(body);
-    if (!headers["Content-Type"]) {
+    if (!caseInsensitiveHasKey(headers, "Content-Type")) {
       options.headers["Content-Type"] = "application/json";
     }
   }
 
   if (formData) {
     options.body = toUrlParams(formData);
-    if (!headers["Content-Type"]) {
+    if (!caseInsensitiveHasKey(headers, "Content-Type")) {
       options.headers["Content-Type"] = "application/x-www-form-urlencoded";
     }
   }

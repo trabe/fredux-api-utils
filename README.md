@@ -93,6 +93,10 @@ This options, for the most part adhere to the fetch Request API.
 
 ## CHANGELOG
 
+### v2.0.1
+
+* Fix headers check wehn forcing Content-Type to be case insensitive
+
 ### v2.0.0
 
 * Removed the magic response parsing, thus removing the raw methods. Every method is raw now. Now all methods

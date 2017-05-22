@@ -100,7 +100,7 @@ describe("body handling", () => {
       withMockCall({}, url => {
         post(url, { body: { test: 1 }, headers: { "Content-Type": "custom" } });
         expect(JSON.parse(lastCall().body)).toEqual({ test: 1 });
-        expect(lastCall().headers.get("Content-Type")).toEqual("custom");
+        expect(lastCall().headers.get("content-type")).toEqual("custom");
       });
     });
   });
@@ -119,7 +119,7 @@ describe("body handling", () => {
         post(url, { formData: { test: 1 }, headers: { "Content-Type": "custom" } });
 
         expect(lastCall().body).toEqual("test=1");
-        expect(lastCall().headers.get("Content-Type")).toEqual("custom");
+        expect(lastCall().headers.get("content-type")).toEqual("custom");
       });
     });
   });
