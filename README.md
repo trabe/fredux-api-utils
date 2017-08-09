@@ -113,7 +113,7 @@ This options, for the most part adhere to the fetch Request API.
 
 ### v2.0.1
 
-* Fix headers check wehn forcing Content-Type to be case insensitive
+* Fix headers check when forcing Content-Type to be case insensitive
 
 ### v2.0.0
 
