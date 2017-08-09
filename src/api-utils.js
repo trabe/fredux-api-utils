@@ -1,7 +1,5 @@
 const array = a => (a instanceof Array ? a : [a]);
 
-const identity = e => e;
-
 const isFormDataObj = e => (typeof FormData !== "undefined" && e instanceof FormData);
 
 const urlParameter = (key, value) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
@@ -60,17 +58,15 @@ function buildFetchRequest(
   }
 
   if (formData) {
-    let transformData = identity;
+    options.body = formData;
 
     if (!isFormDataObj(formData)) {
-      transformData = toUrlParams;
+      options.body = toUrlParams(options.body);
 
       if (!caseInsensitiveHasKey(headers, "Content-Type")) {
         options.headers["Content-Type"] = "application/x-www-form-urlencoded";
       }
     }
-
-    options.body = transformData(formData);
   }
 
   return new Request(endpoint, options);
