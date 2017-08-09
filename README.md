@@ -27,7 +27,7 @@ To send an object as the JSON body:
 ```javascript
 import { post } from "fredux-api-utils";
 
-get("/users", { body: {name: "Peter"} })
+post("/users", { body: {name: "Peter"} })
   .then(response => console.log(response))
   .catch(error => console.log(error));
 ```
@@ -37,24 +37,42 @@ To send form data as the body:
 ```javascript
 import { post } from "fredux-api-utils";
 
-get("/users", { formData: { key1: "value1", key2: ["value2", "value3"] } })
+post("/users", { formData: { key1: "value1", key2: ["value2", "value3"] } })
   .then(response => console.log(response))
   .catch(error => console.log(error));
 ```
 
-To add some headers.
+To send form data as `FormData` object:
+
+```javascript
+import { post } from "fredux-api-utils";
+
+const formData = new FormData();
+formData.append("name", "My Name");
+formData.append("file", new Blob(["Some notes..."], { type: "text/plain" }));
+
+// If there's not a Content-Type header, will use multipart/form-data
+post("/users", { formData })
+  .then(response => console.log(response))
+  .catch(error => console.log(error));
+
+```
+
+To add some headers:
 
 
 ```javascript
 import { post } from "fredux-api-utils";
 
-get("/users", { headers: { "my-custom-header": "custom" } })
+post("/users", { headers: { "my-custom-header": "custom" } })
   .then(response => console.log(response))
   .catch(error => console.log(error));
 ```
 
-**NOTE**: when passing a `body` option `Content-Type: application/json` will always be set unless you explicitely pass
-a `Content-Type` header. The same goes with `formData` and `Content-Type: x-www-form-urlencoded`.
+**NOTE**: when passing a `body` option, `Content-Type: application/json` will always be set unless you explicitely pass
+a `Content-Type`. The same goes with `formData` and `Content-Type: x-www-form-urlencoded` unless you pass
+a `FormData` object. In this case, `Content-Type: multipart/form-data` will be set automatically as default (you
+can override it anyway).
 
 
 To set several other options just pass them:
@@ -78,7 +96,7 @@ Where `endpoint` is a string with the resource you wish to fetch and `options` i
 object containing custom settings you want to apply to the request. The possible options are:
 
 * `body`: any JSON body.
-* `formData`: any data to be passed as a x-www-form-urlencoded object
+* `formData`: any data to be passed as a `x-www-form-urlencoded` object or a `FormData` instance.
 * `params`: an object containing query params.
 * `headers`: any headers you want to add to your request.
 * `timeout`: any timeout in milliseconds. The default is `0`.
