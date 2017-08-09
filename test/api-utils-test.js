@@ -124,6 +124,27 @@ describe("body handling", () => {
     });
   });
 
+  describe("from FormData body", () => {
+    it("handles the body", () => {
+      withMockCall({}, url => {
+        const formData = new FormData();
+        formData.append("name", "Mr Potato");
+        formData.append("color", "blue")
+
+        post(url, { formData });
+
+        // mock-test returns body without processing
+        expect(lastCall().body.get("name")).toEqual("Mr Potato");
+        expect(lastCall().body.get("color")).toEqual("blue");
+      });
+    });
+
+    // TODO: Can't fully test FormData for now due to mock-test limitations... :'(
+    it("handles a file");
+    it("handles auto content-type");
+    it("respects another headers");
+  });
+
   describe("response handling", () => {
     it("returns a promise", done => {
       withMockCall({}, url => {
