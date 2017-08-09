@@ -111,6 +111,10 @@ This options, for the most part adhere to the fetch Request API.
 
 ## CHANGELOG
 
+### v2.1.0
+
+* Add FormData object support
+
 ### v2.0.1
 
 * Fix headers check when forcing Content-Type to be case insensitive
