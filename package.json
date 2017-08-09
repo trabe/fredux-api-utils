@@ -4,8 +4,8 @@
   "description": "fabulous redux api utils",
   "main": "dist/index.js",
   "scripts": {
-    "test": "mocha ./test/*-test.js --compilers js:babel-register --recursive",
-    "test:watch": "mocha ./test/*-test.js --compilers js:babel-register --recursive --watch",
+    "test": "mocha ./test/*-test.js -r jsdom-global/register --compilers js:babel-register --recursive",
+    "test:watch": "mocha ./test/*-test.js -r jsdom-global/register --compilers js:babel-register --recursive --watch",
     "clean": "rm -rf dist/*",
     "lint": "eslint ./src ./test",
     "lint:fix": "eslint ./src ./test --fix",
@@ -26,11 +26,13 @@
     "eslint-config-prettier": "^1.6.0",
     "eslint-config-trabe": "^0.0.5",
     "eslint-plugin-prettier": "^2.0.1",
-    "expect": "^1.20.1",
-    "fetch-mock": "^4.5.0",
+    "expect": "^1.20.2",
+    "fetch-mock": "^5.12.1",
     "isomorphic-fetch": "^2.2.1",
-    "mocha": "^2.4.5",
-    "prettier": "^0.22.0",
+    "jsdom": "11.1.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^3.5.0",
+    "prettier": "^1.5.3",
     "sinon": "^1.17.4"
   },
   "eslintConfig": {

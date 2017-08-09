@@ -1,4 +1,6 @@
-const array = a => a instanceof Array ? a : [a];
+const array = a => (a instanceof Array ? a : [a]);
+
+const isFormDataObj = e => (typeof FormData !== "undefined" && e instanceof FormData);
 
 const urlParameter = (key, value) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
 
@@ -56,9 +58,14 @@ function buildFetchRequest(
   }
 
   if (formData) {
-    options.body = toUrlParams(formData);
-    if (!caseInsensitiveHasKey(headers, "Content-Type")) {
-      options.headers["Content-Type"] = "application/x-www-form-urlencoded";
+    options.body = formData;
+
+    if (!isFormDataObj(formData)) {
+      options.body = toUrlParams(options.body);
+
+      if (!caseInsensitiveHasKey(headers, "Content-Type")) {
+        options.headers["Content-Type"] = "application/x-www-form-urlencoded";
+      }
     }
   }
 
@@ -66,7 +73,7 @@ function buildFetchRequest(
 }
 
 const addQuery = (endpoint, params) =>
-  !params || Object.keys(params).length === 0 ? endpoint : `${endpoint}?${toUrlParams(params)}`;
+  (!params || Object.keys(params).length === 0 ? endpoint : `${endpoint}?${toUrlParams(params)}`);
 
 const makeRequest = method =>
   (endpoint, options = {}) => {
