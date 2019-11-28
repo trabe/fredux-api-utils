@@ -90,4 +90,5 @@ const makeRequest = method =>
 export const get = makeRequest("GET");
 export const post = makeRequest("POST");
 export const put = makeRequest("PUT");
+export const patch = makeRequest("PATCH");
 export const del = makeRequest("DELETE");

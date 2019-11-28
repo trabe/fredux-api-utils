@@ -2,7 +2,7 @@
 import "isomorphic-fetch";
 import fetchMock from "fetch-mock";
 import expect from "expect";
-import { get, post, put, del } from "../src/api-utils";
+import { get, post, put, patch, del } from "../src/api-utils";
 
 const defaultUrl = "http://what/frus";
 
@@ -15,7 +15,7 @@ const withMockCall = ({ url = defaultUrl, body = "", status = 200 }, fn) => {
 const lastCall = (url = defaultUrl) => fetchMock.lastCall(url)[0];
 
 describe("api methods", () => {
-  it("get does a GETº", () => {
+  it("get does a GET", () => {
     withMockCall({}, url => {
       get(url);
       expect(lastCall().method).toEqual("GET");
@@ -33,6 +33,13 @@ describe("api methods", () => {
     withMockCall({}, url => {
       put(url);
       expect(lastCall().method).toEqual("PUT");
+    });
+  });
+
+  it("patch does a PATCH", () => {
+    withMockCall({}, url => {
+      patch(url);
+      expect(lastCall().method).toEqual("PATCH");
     });
   });
 

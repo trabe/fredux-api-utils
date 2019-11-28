@@ -90,6 +90,7 @@ get("/users", { timeout: 2000, mode: "no-cors" })
  * `get(endpoint, options)`
  * `post(endpoint, options)`
  * `put(endpoint, options)`
+ * `patch(endpoint, options)`
  * `del(endpoint, options)`
 
 Where `endpoint` is a string with the resource you wish to fetch and `options` is an
@@ -110,6 +111,10 @@ This options, for the most part adhere to the fetch Request API.
 
 
 ## CHANGELOG
+
+### v2.2.0
+
+* Add patch support
 
 ### v2.1.0
 
